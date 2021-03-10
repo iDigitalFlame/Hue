@@ -174,7 +174,7 @@ func (s StartupMode) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON fulfils the JSON Unmarshaler interface.
 func (s *StartupMode) UnmarshalJSON(d []byte) error {
 	if len(d) < 8 || d[0] != '"' {
-		return &errval{s: `json: invalid StartupMode value`}
+		return &errval{s: `invalid StartupMode value`}
 	}
 	switch d[1] {
 	case 'c', 'C':
@@ -184,7 +184,7 @@ func (s *StartupMode) UnmarshalJSON(d []byte) error {
 	case 'p', 'P':
 		*s = StartupResume
 	default:
-		return &errval{s: `json: invalid StartupMode value "` + string(d) + `"`}
+		return &errval{s: `invalid StartupMode value "` + string(d) + `"`}
 	}
 	return nil
 }
@@ -200,7 +200,7 @@ func (c *Control) UpdateContext(x context.Context) error {
 		}
 		var m map[string]json.RawMessage
 		if err = json.Unmarshal(r, &m); err != nil {
-			return &errval{s: `bridge: could not parse response JSON`, e: err}
+			return &errval{s: `could not parse response JSON`, e: err}
 		}
 		return c.unmarshal(m)
 	}
@@ -229,37 +229,37 @@ func (c *Control) UpdateContext(x context.Context) error {
 func (c *Control) unmarshal(d map[string]json.RawMessage) error {
 	v, ok := d["name"]
 	if !ok {
-		return &errval{s: `json: missing "name" parameter value`}
+		return &errval{s: `missing "name" parameter value`}
 	}
 	if err := json.Unmarshal(v, &c.name); err != nil {
 		return err
 	}
 	if v, ok = d["uniqueid"]; !ok {
-		return &errval{s: `json: missing "uniqueid" parameter value`}
+		return &errval{s: `missing "uniqueid" parameter value`}
 	}
 	if err := json.Unmarshal(v, &c.UUID); err != nil {
 		return err
 	}
 	if v, ok = d["type"]; !ok {
-		return &errval{s: `json: missing "type" parameter value`}
+		return &errval{s: `missing "type" parameter value`}
 	}
 	if err := json.Unmarshal(v, &c.Make); err != nil {
 		return err
 	}
 	if v, ok = d["modelid"]; !ok {
-		return &errval{s: `json: missing "modelid" parameter value`}
+		return &errval{s: `missing "modelid" parameter value`}
 	}
 	if err := json.Unmarshal(v, &c.Model); err != nil {
 		return err
 	}
 	if v, ok = d["productname"]; !ok {
-		return &errval{s: `json: missing "productname" parameter value`}
+		return &errval{s: `missing "productname" parameter value`}
 	}
 	if err := json.Unmarshal(v, &c.Product); err != nil {
 		return err
 	}
 	if v, ok = d["state"]; !ok {
-		return &errval{s: `json: missing "state" parameter value`}
+		return &errval{s: `missing "state" parameter value`}
 	}
 	if err := json.Unmarshal(v, &c.state); err != nil {
 		return err

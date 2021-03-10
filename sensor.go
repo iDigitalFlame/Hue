@@ -33,7 +33,9 @@ type Sensor struct {
 	mask   uint16
 	Manual bool
 }
-type sensorTime time.Time
+type sensorTime struct {
+	time.Time
+}
 type sensorConfig struct {
 	Led     *bool  `json:"ledindication,omitempty"`
 	Battery *uint8 `json:"battery,omitempty"`
@@ -186,7 +188,6 @@ func (s Sensor) Get(n string) (interface{}, bool) {
 func (t *sensorTime) UnmarshalJSON(d []byte) error {
 	var (
 		s   string
-		v   time.Time
 		err error
 	)
 	if err = json.Unmarshal(d, &s); err != nil {
@@ -195,10 +196,9 @@ func (t *sensorTime) UnmarshalJSON(d []byte) error {
 	if len(s) == 0 || s == "none" {
 		return nil
 	}
-	if v, err = time.Parse("2006-01-02T15:04:05", s); err != nil {
+	if t.Time, err = time.Parse("2006-01-02T15:04:05", s); err != nil {
 		return err
 	}
-	*t = sensorTime(v)
 	return nil
 }
 
@@ -290,19 +290,19 @@ func (s *Sensor) unmarshal(i string, b *Bridge, d []byte) error {
 	}
 	v, ok := m["name"]
 	if s.ID, s.bridge = i, b; !ok {
-		return &errval{s: `json: missing "name" parameter value`}
+		return &errval{s: `missing "name" parameter value`}
 	}
 	if err := json.Unmarshal(v, &s.name); err != nil {
 		return err
 	}
 	if v, ok = m["type"]; !ok {
-		return &errval{s: `json: missing "type" parameter value`}
+		return &errval{s: `missing "type" parameter value`}
 	}
 	if err := json.Unmarshal(v, &s.Make); err != nil {
 		return err
 	}
 	if v, ok = m["modelid"]; !ok {
-		return &errval{s: `json: missing "modelid" parameter value`}
+		return &errval{s: `missing "modelid" parameter value`}
 	}
 	if err := json.Unmarshal(v, &s.Model); err != nil {
 		return err
@@ -319,7 +319,7 @@ func (s *Sensor) unmarshal(i string, b *Bridge, d []byte) error {
 	}
 	var a map[string]json.RawMessage
 	if v, ok = m["state"]; !ok {
-		return &errval{s: `json: missing "state" parameter value`}
+		return &errval{s: `missing "state" parameter value`}
 	}
 	if err := json.Unmarshal(v, &a); err != nil {
 		return err
@@ -334,7 +334,7 @@ func (s *Sensor) unmarshal(i string, b *Bridge, d []byte) error {
 		}
 	}
 	if v, ok = m["config"]; !ok {
-		return &errval{s: `json: missing "state" parameter value`}
+		return &errval{s: `missing "state" parameter value`}
 	}
 	return json.Unmarshal(v, &s.config)
 }

@@ -71,7 +71,7 @@ func (e Effect) String() string {
 // UnmarshalJSON fulfils the JSON Unmarshaler interface.
 func (a *Alert) UnmarshalJSON(d []byte) error {
 	if len(d) < 6 || d[0] != '"' {
-		return &errval{s: `json: invalid Alert value`}
+		return &errval{s: `invalid Alert value`}
 	}
 	switch d[1] {
 	case 'n', 'N':
@@ -81,13 +81,13 @@ func (a *Alert) UnmarshalJSON(d []byte) error {
 	case 'l', 'L':
 		*a = AlertBreathe
 	default:
-		return &errval{s: `json: invalid Alert value "` + string(d) + `"`}
+		return &errval{s: `invalid Alert value "` + string(d) + `"`}
 	}
 	return nil
 }
 func (c *color) UnmarshalJSON(d []byte) error {
 	if len(d) < 4 || d[0] != '"' {
-		return &errval{s: `json: invalid Color value`}
+		return &errval{s: `invalid Color value`}
 	}
 	*c = true
 	return nil
@@ -96,7 +96,7 @@ func (c *color) UnmarshalJSON(d []byte) error {
 // UnmarshalJSON fulfils the JSON Unmarshaler interface.
 func (e *Effect) UnmarshalJSON(d []byte) error {
 	if len(d) < 6 || d[0] != '"' {
-		return &errval{s: `json: invalid Effect value`}
+		return &errval{s: `invalid Effect value`}
 	}
 	switch d[1] {
 	case 'n', 'N':
@@ -104,7 +104,7 @@ func (e *Effect) UnmarshalJSON(d []byte) error {
 	case 'c', 'C':
 		*e = EffectColorLoop
 	default:
-		return &errval{s: `json: invalid Effect value "` + string(d) + `"`}
+		return &errval{s: `invalid Effect value "` + string(d) + `"`}
 	}
 	return nil
 }

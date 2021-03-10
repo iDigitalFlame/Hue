@@ -61,7 +61,7 @@ func closest(a, b point, x, y float32) (float32, float32) {
 }
 func xyFromHex(c gamut, s string) (float32, float32, error) {
 	if len(s) < 6 || len(s) > 7 || (len(s) == 7 && s[0] != '#') {
-		return 0, 0, &errval{s: `bridge: hex value "` + s + `" is invalid`}
+		return 0, 0, &errval{s: `hex value "` + s + `" is invalid`}
 	}
 	i := 0
 	if s[0] == '#' {
@@ -72,13 +72,13 @@ func xyFromHex(c gamut, s string) (float32, float32, error) {
 		err     error
 	)
 	if r, err = strconv.ParseUint(s[i:i+2], 16, 16); err != nil {
-		return 0, 0, &errval{s: `bridge: hex red value is invalid`, e: err}
+		return 0, 0, &errval{s: `hex red value is invalid`, e: err}
 	}
 	if g, err = strconv.ParseUint(s[i+2:i+4], 16, 16); err != nil {
-		return 0, 0, &errval{s: `bridge: hex green value is invalid`, e: err}
+		return 0, 0, &errval{s: `hex green value is invalid`, e: err}
 	}
 	if b, err = strconv.ParseUint(s[i+4:i+6], 16, 16); err != nil {
-		return 0, 0, &errval{s: `bridge: hex blue value is invalid`, e: err}
+		return 0, 0, &errval{s: `hex blue value is invalid`, e: err}
 	}
 	x, y := xyFromRGB(c, uint8(r), uint8(g), uint8(b))
 	return x, y, nil

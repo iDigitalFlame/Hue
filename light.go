@@ -1,13 +1,12 @@
 package hue
 
 import (
-	"fmt"
 	"time"
 )
 
 // ErrNoColor is an error returned when attempting to set the color on a Light when the Light does not support
 // colors, meaning it is only has white support.
-var ErrNoColor = &errval{s: `bridge: light does not support color`}
+var ErrNoColor = &errval{s: `light does not support color`}
 
 // Light represents a controllable Hue Light. This can be used to control and set the Light State.
 type Light struct {
@@ -172,7 +171,6 @@ func (l *Light) SetXY(x float32, y float32) error {
 func (l *Light) SetCustomPowerOn(s LightState) error {
 	l.startup.Mode = startupCustom
 	l.startup.Settings = &s.controlState
-	fmt.Printf("startup: %+v\n", l.startup.Settings)
 	l.mask |= maskStartup
 	if l.Manual {
 		return nil
