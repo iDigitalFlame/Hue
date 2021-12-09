@@ -5,33 +5,40 @@ import "encoding/json"
 const (
 	// AlertNone is a light alert effect which the light is not performing an effect.
 	AlertNone = Alert(0)
-	// AlertSelect is a light alert effect which the light is performing one breathe cycle.
+	// AlertSelect is a light alert effect which the light is performing one
+	// breathe cycle.
 	AlertSelect = Alert(1)
-	// AlertBreathe is a light alert effect which the the light is performing breathe cycles for 15 seconds or
-	// until an 'AlertNone' command is received. Note that this contains the last alert sent to the light and not
-	// its current state. i.e. After the breathe cycle has finished the bridge does not reset the alert to “none“.
+	// AlertBreathe is a light alert effect which the the light is performing
+	// breathe cycles for 15 seconds or until an 'AlertNone' command is received.
+	//
+	// Note that this contains the last alert sent to the light and not its current
+	// state. i.e. After the breathe cycle has finished the bridge does not reset
+	// the alert to “none“.
 	AlertBreathe = Alert(2)
 
 	// EffectNone is a light effect that instructs the light to do nothing.
 	EffectNone = Effect(false)
-	// EffectColorLoop is a light effect which the light will cycle through all hues using the current brightness
-	// and saturation settings.
+	// EffectColorLoop is a light effect which the light will cycle through all
+	// hues using the current brightness and saturation settings.
 	EffectColorLoop = Effect(true)
 
-	// StartupResume is a StartupMode option that will resume the previous state of the device when it lost power.
+	// StartupResume is a StartupMode option that will resume the previous state
+	// of the device when it lost power.
 	StartupResume = StartupMode(1)
-	// StartupDefault is a StartupMode option that will use the default white color mode when the device resumes from
-	// a power loss.
+	// StartupDefault is a StartupMode option that will use the default white
+	// color mode when the device resumes from a power loss.
 	StartupDefault = StartupMode(0)
 	startupCustom  = StartupMode(3)
 )
 
 type color bool
 
-// Effect represents the type of light Effect that can be applied to a Hue Control object.
+// Effect represents the type of light Effect that can be applied to a Hue Control
+// object.
 type Effect bool
 
-// Alert represents the type of Alert effect that can be applied to a Hue Control object.
+// Alert represents the type of Alert effect that can be applied to a Hue Control
+// object.
 type Alert uint8
 type controlState struct {
 	XY          point  `json:"xy,omitempty"`

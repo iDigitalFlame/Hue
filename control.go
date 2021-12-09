@@ -21,21 +21,18 @@ const (
 	maskAll = uint16(65535)
 )
 
-// Control represents a controllable Hue object. This can be a parent struct for a Lights or something that
-// can be toggled, such as an outlet.
+// Control represents a controllable Hue object. This can be a parent struct for
+// a Lights or something that can be toggled, such as an outlet.
 type Control struct {
-	ID      string
-	Make    string
-	Model   string
 	startup controlStartup
+	bridge  *Bridge
 
-	Product string
-	name    string
+	ID, Model, Product string
+	name               string
 
-	UUID   string
-	bridge *Bridge
-	state  controlState
-	mask   uint16
+	UUID, Make string
+	state      controlState
+	mask       uint16
 
 	Manual bool
 }
@@ -47,47 +44,53 @@ type decoder struct {
 // StartupMode is a representation of the power on mode of the Control.
 type StartupMode uint8
 type controlStartup struct {
-	Mode     StartupMode   `json:"mode"`
 	Settings *controlState `json:"customsettings,omitempty"`
+	Mode     StartupMode   `json:"mode"`
 }
 
-// IsOn returns true if this Control is enabled and in the "On" state.
-func (c Control) IsOn() bool {
-	return c.state.On
-}
-
-// On will switch the Control into the "On" state. This function returns any errors during setting the state.
-// This function immediately returns if the 'Manual' attribute is "true" and will change the state once the 'Update*'
-// function is called.
+// On will switch the Control into the "On" state.
+//
+// This function returns any errors during setting the state.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
 func (c *Control) On() error {
 	return c.SetOn(true)
 }
 
-// Off will switch the Control into the "Off" state. This function returns any errors during setting the state.
-// This function immediately returns if the 'Manual' attribute is "true" and will change the state once the 'Update*'
-// function is called.
+// Off will switch the Control into the "Off" state.
+//
+// This function returns any errors during setting the state.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
 func (c *Control) Off() error {
 	return c.SetOn(false)
 }
 
+// IsOn returns true if this Control is enabled and in the "On" state.
+func (c *Control) IsOn() bool {
+	return c.state.On
+}
+
 // Alert returns the Alert status of the Control.
-func (c Control) Alert() Alert {
+func (c *Control) Alert() Alert {
 	return c.state.Alert
 }
 
 // Name returns the Control's display name.
-func (c Control) Name() string {
+func (c *Control) Name() string {
 	return c.name
 }
 
-// Update will attempt to sync any changes that have been set while "Manual" is set to "true". This function will
-// return any errors that occur during updating.
+// Update will attempt to sync any changes that have been set while "Manual" is
+// set to "true". This function will return any errors that occur during updating.
 func (c *Control) Update() error {
 	return c.UpdateContext(c.bridge.ctx)
 }
 
 // Reachable returns true if the Control is reachable by the Bridge.
-func (c Control) Reachable() bool {
+func (c *Control) Reachable() bool {
 	return c.state.Reachable
 }
 
@@ -102,47 +105,53 @@ func (s StartupMode) String() string {
 	return "custom"
 }
 
-// SetOn will switch the Control into the specified state. This function returns any errors during setting the state.
-// This function immediately returns if the 'Manual' attribute is "true" and will change the state once the 'Update*'
-// function is called.
+// SetOn will switch the Control into the specified state.
+//
+// This function returns any errors during setting the state.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
 func (c *Control) SetOn(s bool) error {
 	c.state.On = s
-	c.mask |= maskOn
-	if c.Manual {
+	if c.mask |= maskOn; c.Manual {
 		return nil
 	}
 	return c.UpdateContext(c.bridge.ctx)
 }
 
 // Startup returns the power on method of the Control.
-func (c Control) Startup() StartupMode {
+func (c *Control) Startup() StartupMode {
 	return c.startup.Mode
 }
 
-// SetAlert will change the Control into the specified Alert state. This function returns any errors during setting
-// the state. This function immediately returns if the 'Manual' attribute is "true" and will change the state once
-// the 'Update*' function is called.
+// SetAlert will change the Control into the specified Alert state.
+//
+// This function returns any errors during setting the state.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
 func (c *Control) SetAlert(a Alert) error {
 	c.state.Alert = a
-	c.mask |= maskAlert
-	if c.Manual {
+	if c.mask |= maskAlert; c.Manual {
 		return nil
 	}
 	return c.UpdateContext(c.bridge.ctx)
 }
 
-// SetName will change the Control's display name. This function returns any errors during setting the display name.
-// This function immediately returns if the 'Manual' attribute is "true" and will change the state once the 'Update*'
-// function is called.
+// SetName will change the Control's display name.
+//
+// This function returns any errors during setting the display name.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
 func (c *Control) SetName(n string) error {
 	c.name = n
-	c.mask |= maskName
-	if c.Manual {
+	if c.mask |= maskName; c.Manual {
 		return nil
 	}
 	return c.UpdateContext(c.bridge.ctx)
 }
-func (c Control) marshal() ([]byte, error) {
+func (c *Control) marshal() ([]byte, error) {
 	m := make(map[string]interface{})
 	if c.mask&maskName != 0 {
 		m["name"] = c.name
@@ -153,14 +162,18 @@ func (c Control) marshal() ([]byte, error) {
 	return json.Marshal(m)
 }
 
-// SetPowerOn will change the Control's power on state. This function returns any errors during setting the power on
-// state. This function immediately returns if the 'Manual' attribute is "true" and will change the state once the
-// 'Update*' function is called. NOTE: Not every device will support this function, mainly only first party (Phillips)
-// devices will have support for this.
+// SetPowerOn will change the Control's power on state.
+//
+// This function returns any errors during setting the power on state.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
+//
+// NOTE: Not every device will support this function, mainly only first party
+// (Phillips) devices will have support for this.
 func (c *Control) SetPowerOn(s StartupMode) error {
 	c.startup.Mode, c.startup.Settings = s, nil
-	c.mask |= maskStartup
-	if c.Manual {
+	if c.mask |= maskStartup; c.Manual {
 		return nil
 	}
 	return c.UpdateContext(c.bridge.ctx)
@@ -189,9 +202,13 @@ func (s *StartupMode) UnmarshalJSON(d []byte) error {
 	return nil
 }
 
-// UpdateContext will attempt to sync any changes that have been set while "Manual" is set to "true". This function
-// will return any errors that occur during updating. This function allows a Context to be specified to be used
-// instead of the Bridge's base Context.
+// UpdateContext will attempt to sync any changes that have been set while
+// "Manual" is set to "true".
+//
+// This function will return any errors that occur during updating.
+//
+// This function allows a Context to be specified to be used instead of the
+// Bridge's base Context.
 func (c *Control) UpdateContext(x context.Context) error {
 	if c.mask == 0 {
 		r, err := c.bridge.request(x, http.MethodGet, "/lights/"+c.ID, nil)

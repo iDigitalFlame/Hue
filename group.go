@@ -7,31 +7,49 @@ import (
 )
 
 const (
-	// Luminaire is a lighting installation of default groupings of hue lights. The bridge will
-	// pre-install these groups for ease of use. This type cannot be created manually.  Also, a light can only be in
-	// a maximum of one luminaire group. See multisource luminaires for more info.
-	Luminaire GroupType = 0
-	// LightSource is a group of lights which is created by the bridge based on multisource luminaire attributes of
-	// Zigbee light resource.
-	LightSource GroupType = iota
-	// LightGroup is a group of lights that can be controlled together. This the default group type that the bridge
-	// generates for user created groups. Default type when no type is given on creation.
+	// Luminaire is a lighting installation of default groupings of hue lights.
+	//
+	// The bridge will pre-install these groups for ease of use.
+	// This type cannot be created manually.
+	//
+	// Also, a light can only be in a maximum of one luminaire group. See
+	// multisource luminaires for more info.
+	Luminaire groupType = 0
+	// LightSource is a group of lights which is created by the bridge based on
+	// multisource luminaire attributes of Zigbee light resource.
+	LightSource groupType = iota
+	// LightGroup is a group of lights that can be controlled together.
+	//
+	// This the default group type that the bridge generates for user created
+	// groups. Default type when no type is given on creation.
 	LightGroup
-	// Room is a group of lights that are physically located in the same place in the house. Rooms behave similar as
-	// light groups, except: (1) A room can be empty and contain 0 lights, (2) a light is only allowed in one room and
-	// (3) a room isn’t automatically deleted when all lights in that room are deleted.
+	// Room is a group of lights that are physically located in the same place
+	// in the house. Rooms behave similar as light groups, except:
+	//
+	// (1) A room can be empty and contain 0 lights,
+	// (2) a light is only allowed in one room and
+	// (3) a room isn’t automatically deleted when all lights in that room are
+	//     deleted.
 	Room
-	// Entertainment groups describe a group of lights that are used in an entertainment setup. Locations describe the
-	// relative position of the lights in an entertainment setup. E.g. for TV the position is relative to the TV. Can
-	// be used to configure streaming sessions. Entertainment groups behave in a similar way as light groups, with
-	// the exception: it can be empty and contain 0 lights. The group is also not automatically recycled when lights
-	// are deleted. The group of lights can be controlled together as in LightGroup.
+	// Entertainment groups describe a group of lights that are used in an
+	// entertainment setup. Locations describe the relative position of the lights
+	// in an entertainment setup. E.g. for TV the position is relative to the TV.
+	// Can be used to configure streaming sessions. Entertainment groups behave
+	// in a similar way as light groups, with the exception: it can be empty and
+	// contain 0 lights.
+	//
+	// The group is also not automatically recycled when lights are deleted.
+	//
+	// The group of lights can be controlled together as in LightGroup.
 	Entertainment
-	// Zone types describe a group of lights that can be controlled together. Zones can be empty and contain 0 lights.
+	// Zone types describe a group of lights that can be controlled together.
+	// Zones can be empty and contain 0 lights.
+	//
 	// A light is allowed to be in multiple zones.
 	Zone
-	// All is a special group containing all lights in the system, and is not returned by the ‘get all groups’
-	// command. This group is not visible, and cannot be created, modified or deleted using the API.
+	// All is a special group containing all lights in the system, and is not
+	// returned by the ‘get all groups’ command. This group is not visible, and
+	// cannot be created, modified or deleted using the API.
 	All
 )
 
@@ -80,28 +98,42 @@ const (
 	ClassUpstairs
 )
 
+// Group is a struct that can be used to access and control the Sensors, Lights
+// and Controls included. Groups can be used to control multiple devices at a
+// single time.
 type Group struct {
+	bridge *Bridge
+
+	ID   string
+	name string
+
 	Lights   []*Light
 	Sensors  []*Sensor
 	Controls []*Control
+	action   controlState
+	mask     uint16
 
-	ID     string
-	name   string
-	bridge *Bridge
-	action controlState
-	mask   uint16
+	On, AllOn, Manual bool
 
-	On     bool
-	AllOn  bool
-	Manual bool
-
-	Type  GroupType
+	Type  groupType
 	class GroupClass
 }
-type GroupType uint8
+type groupType uint8
+
+// GroupClass is an integer representation that is used to represent the Group
+// classification and can be used to determine the display icon in the Hue app.
 type GroupClass uint8
 
-func (t GroupType) String() string {
+// Name returns the name of the Group.
+func (g *Group) Name() string {
+	return g.name
+}
+
+// Class returns the Group Class type.
+func (g *Group) Class() GroupClass {
+	return g.class
+}
+func (t groupType) String() string {
 	switch t {
 	case All:
 		return "LightGroup"
@@ -207,15 +239,30 @@ func (r GroupClass) String() string {
 	}
 	return "Other"
 }
-func (t GroupType) MarshalJSON() ([]byte, error) {
+
+// SetName will change the Group's display name. This function returns any errors
+// during setting the display name.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
+func (g *Group) SetName(n string) error {
+	g.name = n
+	if g.mask |= maskName; g.Manual {
+		return nil
+	}
+	return g.UpdateContext(g.bridge.ctx)
+}
+func (t groupType) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + t.String() + `"`), nil
 }
+
+// MarshalJSON converts the GroupClass into a JSON byte array.
 func (r GroupClass) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + r.String() + `"`), nil
 }
-func (t *GroupType) UnmarshalJSON(d []byte) error {
+func (t *groupType) UnmarshalJSON(d []byte) error {
 	if len(d) < 6 || d[0] != '"' {
-		return &errval{s: `invalid GroupType value`}
+		return &errval{s: `invalid groupType value`}
 	}
 	switch {
 	case d[1] == 'R':
@@ -227,7 +274,7 @@ func (t *GroupType) UnmarshalJSON(d []byte) error {
 	case d[1] == 'L' && d[3] == 'm':
 		*t = Luminaire
 	case len(d) < 8:
-		return &errval{s: `invalid GroupType value`}
+		return &errval{s: `invalid groupType value`}
 	case d[1] == 'L' && d[6] == 's':
 		*t = LightSource
 	case d[1] == 'L' && d[6] == 'G':
@@ -235,6 +282,9 @@ func (t *GroupType) UnmarshalJSON(d []byte) error {
 	}
 	return nil
 }
+
+// UnmarshalJSON will take the JSON byte array and convert it into a GroupClass
+// instance and sets the value on this instance.
 func (r *GroupClass) UnmarshalJSON(d []byte) error {
 	if len(d) < 4 || d[0] != '"' {
 		return &errval{s: `invalid GroupClass value`}
@@ -320,9 +370,46 @@ func (r *GroupClass) UnmarshalJSON(d []byte) error {
 		*r = ClassTopFloor
 	case d[1] == 'U' && d[3] == 's':
 		*r = ClassUpstairs
-
 	}
 	return nil
+}
+
+// UpdateContext will attempt to sync any changes that have been set while
+// "Manual" is set to "true".
+//
+// This function will return any errors that occur during updating.
+//
+// This function allows a Context to be specified to be used instead of the
+// Bridge's base Context.
+func (g *Group) UpdateContext(x context.Context) error {
+	if g.mask == 0 {
+		r, err := g.bridge.request(x, http.MethodGet, "/groups/"+g.ID, nil)
+		if err != nil {
+			return err
+		}
+		return g.unmarshal(g.ID, g.bridge, r)
+	}
+	if g.mask&maskName != 0 {
+		b, err := json.Marshal(map[string]string{"name": g.name})
+		if err != nil {
+			return err
+		}
+		if _, err = g.bridge.request(x, http.MethodPut, "/groups/"+g.ID, b); err != nil {
+			return err
+		}
+		if g.mask = g.mask &^ maskName; g.mask == 0 {
+			return nil
+		}
+	}
+	b, err := g.action.marshal(g.mask)
+	if err != nil {
+		return err
+	}
+	if _, err = g.bridge.request(x, http.MethodPut, "/groups/"+g.ID+"/action", b); err != nil {
+		return err
+	}
+	g.mask = 0
+	return err
 }
 func (g *Group) unmarshal(i string, b *Bridge, d []byte) error {
 	var (
@@ -362,11 +449,11 @@ func (g *Group) unmarshal(i string, b *Bridge, d []byte) error {
 		}
 		g.Controls, g.Lights = make([]*Control, 0), make([]*Light, 0, len(s))
 		for i := range s {
-			if x, ok := b.lights[s[i]]; ok {
+			if x, ok2 := b.lights[s[i]]; ok2 {
 				g.Lights = append(g.Lights, x)
 				continue
 			}
-			if x, ok := b.controls[s[i]]; ok {
+			if x, ok2 := b.controls[s[i]]; ok2 {
 				g.Controls = append(g.Controls, x)
 			}
 		}
@@ -377,7 +464,7 @@ func (g *Group) unmarshal(i string, b *Bridge, d []byte) error {
 		}
 		g.Sensors = make([]*Sensor, 0, len(s))
 		for i := range s {
-			if x, ok := b.sensors[s[i]]; ok {
+			if x, ok2 := b.sensors[s[i]]; ok2 {
 				g.Sensors = append(g.Sensors, x)
 			}
 		}
@@ -386,69 +473,16 @@ func (g *Group) unmarshal(i string, b *Bridge, d []byte) error {
 		if err := json.Unmarshal(v, &m); err != nil {
 			return err
 		}
-		if v, ok = m["any_on"]; ok {
-			if err := json.Unmarshal(v, &g.On); err != nil {
+		if x, ok2 := m["any_on"]; ok2 {
+			if err := json.Unmarshal(x, &g.On); err != nil {
 				return err
 			}
 		}
-		if v, ok = m["all_on"]; ok {
-			if err := json.Unmarshal(v, &g.AllOn); err != nil {
+		if x, ok2 := m["all_on"]; ok2 {
+			if err := json.Unmarshal(x, &g.AllOn); err != nil {
 				return err
 			}
 		}
 	}
 	return nil
-}
-
-func (g *Group) Name() string {
-	return g.name
-}
-func (g *Group) Class() GroupClass {
-	return g.class
-}
-
-// SetName will change the Group's display name. This function returns any errors during setting the display name.
-// This function immediately returns if the 'Manual' attribute is "true" and will change the state once the 'Update*'
-// function is called.
-func (g *Group) SetName(n string) error {
-	g.name = n
-	g.mask |= maskName
-	if g.Manual {
-		return nil
-	}
-	return g.UpdateContext(g.bridge.ctx)
-}
-
-// UpdateContext will attempt to sync any changes that have been set while "Manual" is set to "true". This function
-// will return any errors that occur during updating. This function allows a Context to be specified to be used
-// instead of the Bridge's base Context.
-func (g *Group) UpdateContext(x context.Context) error {
-	if g.mask == 0 {
-		r, err := g.bridge.request(x, http.MethodGet, "/groups/"+g.ID, nil)
-		if err != nil {
-			return err
-		}
-		return g.unmarshal(g.ID, g.bridge, r)
-	}
-	if g.mask&maskName != 0 {
-		b, err := json.Marshal(map[string]string{"name": g.name})
-		if err != nil {
-			return err
-		}
-		if _, err = g.bridge.request(x, http.MethodPut, "/groups/"+g.ID, b); err != nil {
-			return err
-		}
-		if g.mask = g.mask &^ maskName; g.mask == 0 {
-			return nil
-		}
-	}
-	b, err := g.action.marshal(g.mask)
-	if err != nil {
-		return err
-	}
-	if _, err = g.bridge.request(x, http.MethodPut, "/groups/"+g.ID+"/action", b); err != nil {
-		return err
-	}
-	g.mask = 0
-	return err
 }

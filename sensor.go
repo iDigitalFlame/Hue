@@ -9,28 +9,29 @@ import (
 )
 
 var (
-	// ErrNotType is an error returned from the 'Get*' functions when the requested type is not valid for the variable.
+	// ErrNotType is an error returned from the 'Get*' functions when the requested
+	// type is not valid for the variable.
 	ErrNotType = &errval{s: `requested value type is not valid for this value`}
-	// ErrNotFound is an error returned from the 'Get*' functions when the requested name is not reported by the Sensor.
+	// ErrNotFound is an error returned from the 'Get*' functions when the requested
+	// name is not reported by the Sensor.
 	ErrNotFound = &errval{s: `requested value does not exist`}
 )
 
-// Sensor represents a Hue Bridge Sensor Accessory and can be used to read and query values.
+// Sensor represents a Hue Bridge Sensor Accessory and can be used to read and
+// query values.
 type Sensor struct {
 	Updated sensorTime
-	config  sensorConfig
-
-	Make    string
-	Model   string
-	Product string
-
-	ID     string
-	UUID   string
-	name   string
-	bridge *Bridge
+	bridge  *Bridge
 
 	Values map[string]interface{}
-	mask   uint16
+	config sensorConfig
+
+	ID, Product, UUID string
+	name              string
+
+	Make, Model string
+	mask        uint16
+
 	Manual bool
 }
 type sensorTime struct {
@@ -46,28 +47,34 @@ type sensorConfig struct {
 }
 
 // Led will return true if the Sensor's built in Led is on.
-func (s Sensor) Led() bool {
+func (s *Sensor) Led() bool {
 	if s.config.Led == nil {
 		return false
 	}
 	return *s.config.Led
 }
 
-// IsOn returns true if this Control is enabled and in the "On" state.
-func (s Sensor) IsOn() bool {
-	return s.config.On
-}
-
-// On will switch the Control into the "On" state. This function returns any errors during setting the state.
-// This function immediately returns if the 'Manual' attribute is "true" and will change the state once the 'Update*'
-// function is called.
+// On will switch the Control into the "On" state.
+//
+// This function returns any errors during setting the state.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
 func (s *Sensor) On() error {
 	return s.SetOn(true)
 }
 
-// Off will switch the Control into the "Off" state. This function returns any errors during setting the state.
-// This function immediately returns if the 'Manual' attribute is "true" and will change the state once the 'Update*'
-// function is called.
+// IsOn returns true if this Control is enabled and in the "On" state.
+func (s *Sensor) IsOn() bool {
+	return s.config.On
+}
+
+// Off will switch the Control into the "Off" state.
+//
+// This function returns any errors during setting the state.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
 func (s *Sensor) Off() error {
 	return s.SetOn(false)
 }
@@ -87,22 +94,26 @@ func (s *Sensor) HasLed() bool {
 	return s.config.Led != nil
 }
 
-// Battery returns the Sensor's battery level. This function returns 0 if no battery level is reported.
-func (s Sensor) Battery() uint8 {
+// Update will attempt to sync any changes that have been set while "Manual" is
+// set to "true".
+//
+// This function will return any errors that occur during updating.
+func (s *Sensor) Update() error {
+	return s.UpdateContext(s.bridge.ctx)
+}
+
+// Battery returns the Sensor's battery level.
+//
+// This function returns 0 if no battery level is reported.
+func (s *Sensor) Battery() uint8 {
 	if s.config.Battery == nil {
 		return 0
 	}
 	return *s.config.Battery
 }
 
-// Update will attempt to sync any changes that have been set while "Manual" is set to "true". This function will
-// return any errors that occur during updating.
-func (s *Sensor) Update() error {
-	return s.UpdateContext(s.bridge.ctx)
-}
-
 // Reachable returns true if the Control is reachable by the Bridge.
-func (s Sensor) Reachable() bool {
+func (s *Sensor) Reachable() bool {
 	return s.config.Reachable
 }
 
@@ -111,9 +122,12 @@ func (s *Sensor) HasBattery() bool {
 	return s.config.Battery != nil
 }
 
-// SetOn will switch the Control into the specified state. This function returns any errors during setting the state.
-// This function immediately returns if the 'Manual' attribute is "true" and will change the state once the 'Update*'
-// function is called.
+// SetOn will switch the Control into the specified state.
+//
+// This function returns any errors during setting the state.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
 func (s *Sensor) SetOn(e bool) error {
 	s.config.On = e
 	s.mask |= maskOn
@@ -123,9 +137,12 @@ func (s *Sensor) SetOn(e bool) error {
 	return s.UpdateContext(s.bridge.ctx)
 }
 
-// SetLed will switch the Sensor's LED light into the specified state. This function returns any errors during setting
-// the state. This function immediately returns if the 'Manual' attribute is "true" and will change the state once
-// the 'Update*' function is called.
+// SetLed will switch the Sensor's LED light into the specified state.
+//
+// This function returns any errors during setting the state.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
 func (s *Sensor) SetLed(e bool) error {
 	s.config.Led = &e
 	s.mask |= maskLed
@@ -136,14 +153,17 @@ func (s *Sensor) SetLed(e bool) error {
 }
 
 // Contains returns true if the specified value name is returned by the Sensor.
-func (s Sensor) Contains(n string) bool {
+func (s *Sensor) Contains(n string) bool {
 	_, ok := s.Values[strings.ToLower(n)]
 	return ok
 }
 
-// SetAlert will change the Control into the specified Alert state. This function returns any errors during setting
-// the state. This function immediately returns if the 'Manual' attribute is "true" and will change the state once
-// the 'Update*' function is called.
+// SetAlert will change the Control into the specified Alert state.
+//
+// This function returns any errors during setting the state.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
 func (s *Sensor) SetAlert(a Alert) error {
 	s.config.Alert = a
 	s.mask |= maskAlert
@@ -153,9 +173,12 @@ func (s *Sensor) SetAlert(a Alert) error {
 	return s.UpdateContext(s.bridge.ctx)
 }
 
-// SetName will change the Control's display name. This function returns any errors during setting the display name.
-// This function immediately returns if the 'Manual' attribute is "true" and will change the state once the 'Update*'
-// function is called.
+// SetName will change the Control's display name.
+//
+// This function returns any errors during setting the display name.
+//
+// This function immediately returns if the 'Manual' attribute is "true" and will
+// change the state once the 'Update*' function is called.
 func (s *Sensor) SetName(n string) error {
 	s.name = n
 	s.mask |= maskName
@@ -165,9 +188,19 @@ func (s *Sensor) SetName(n string) error {
 	return s.UpdateContext(s.bridge.ctx)
 }
 
-// GetBool will attempt to retrive a boolean value from the returned Sensor data. This will return 'ErrNotFound' if
-// the value name is not found or 'ErrNotType' if the specified name does not corelate with a boolean value type.
-func (s Sensor) GetBool(n string) (bool, error) {
+// Bool will attempt to retrive a boolean value from the returned Sensor data.
+//
+// This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
+// if the specified name does not corelate with a boolean value type.
+func (s *Sensor) Bool(n string) (bool, error) {
+	return s.GetBool(n)
+}
+
+// GetBool will attempt to retrive a boolean value from the returned Sensor data.
+//
+// This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
+// if the specified name does not corelate with a boolean value type.
+func (s *Sensor) GetBool(n string) (bool, error) {
 	v, ok := s.Values[strings.ToLower(n)]
 	if !ok {
 		return false, ErrNotFound
@@ -179,11 +212,29 @@ func (s Sensor) GetBool(n string) (bool, error) {
 	return false, ErrNotType
 }
 
-// Get will attempt to retrive a value from the returned Sensor data. This function returns the data and a boolean
-// which indicates if the value name is returned by this Sensor.
-func (s Sensor) Get(n string) (interface{}, bool) {
+// String will attempt to retrive a string value from the returned Sensor data.
+//
+// This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
+// if the specified name does not corelate with a string value type.
+func (s *Sensor) String(n string) (string, error) {
+	return s.GetString(n)
+}
+
+// Get will attempt to retrive a value from the returned Sensor data.
+//
+// This function returns the data and a boolean which indicates if the value name
+// is returned by this Sensor.
+func (s *Sensor) Get(n string) (interface{}, bool) {
 	v, ok := s.Values[strings.ToLower(n)]
 	return v, ok
+}
+
+// Number will attempt to retrive a number value from the returned Sensor data.
+//
+// This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
+// if the specified name does not corelate with a number value type.
+func (s *Sensor) Number(n string) (float64, error) {
+	return s.GetNumber(n)
 }
 func (t *sensorTime) UnmarshalJSON(d []byte) error {
 	var (
@@ -202,9 +253,11 @@ func (t *sensorTime) UnmarshalJSON(d []byte) error {
 	return nil
 }
 
-// GetString will attempt to retrive a string value from the returned Sensor data. This will return 'ErrNotFound' if
-// the value name is not found or 'ErrNotType' if the specified name does not corelate with a string value type.
-func (s Sensor) GetString(n string) (string, error) {
+// GetString will attempt to retrive a string value from the returned Sensor data.
+//
+// This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
+// if the specified name does not corelate with a string value type.
+func (s *Sensor) GetString(n string) (string, error) {
 	v, ok := s.Values[strings.ToLower(n)]
 	if !ok {
 		return "", ErrNotFound
@@ -216,9 +269,11 @@ func (s Sensor) GetString(n string) (string, error) {
 	return "", ErrNotType
 }
 
-// GetNumber will attempt to retrive a number value from the returned Sensor data. This will return 'ErrNotFound' if
-// the value name is not found or 'ErrNotType' if the specified name does not corelate with a number value type.
-func (s Sensor) GetNumber(n string) (float64, error) {
+// GetNumber will attempt to retrive a number value from the returned Sensor data.
+//
+// This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
+// if the specified name does not corelate with a number value type.
+func (s *Sensor) GetNumber(n string) (float64, error) {
 	v, ok := s.Values[strings.ToLower(n)]
 	if !ok {
 		return 0, ErrNotFound
@@ -230,9 +285,13 @@ func (s Sensor) GetNumber(n string) (float64, error) {
 	return 0, ErrNotType
 }
 
-// UpdateContext will attempt to sync any changes that have been set while "Manual" is set to "true". This function
-// will return any errors that occur during updating. This function allows a Context to be specified to be used
-// instead of the Bridge's base Context.
+// UpdateContext will attempt to sync any changes that have been set while
+// "Manual" is set to "true".
+//
+// This function will return any errors that occur during updating.
+//
+// This function allows a Context to be specified to be used instead of the
+// Bridge's base Context.
 func (s *Sensor) UpdateContext(x context.Context) error {
 	if s.mask == 0 {
 		r, err := s.bridge.request(x, http.MethodGet, "/sensors/"+s.ID, nil)
