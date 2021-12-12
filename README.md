@@ -2,4 +2,14 @@
 
 Philips Hue Hub Golang API
 
-WIP
+WIP!
+
+Supports
+
+- Lights
+- Controls
+- Groups
+- Zones
+- Rooms
+- "All" Group
+- Sensors

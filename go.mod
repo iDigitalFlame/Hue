@@ -1,3 +1,3 @@
 module github.com/iDigitalFlame/hue
 
-go 1.15
+go 1.17
