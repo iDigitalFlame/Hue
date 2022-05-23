@@ -322,7 +322,7 @@ func (b *Bridge) ControlByName(n string) *Control {
 // access key string.
 //
 // Get a bridge key by using the following command:
-//  curl -k -X POST --data '{"devicetype":  "go_hue"}' https://<hue-ip>/api/
+//  curl -k -X POST --data '{"devicetype": "go_hue"}' https://<hue-ip>/api/
 func Connect(address, key string) (*Bridge, error) {
 	return ConnectContext(context.Background(), address, key)
 }
@@ -421,9 +421,9 @@ func (b *Bridge) getControls(x context.Context) error {
 	if err = json.Unmarshal(r, &m); err != nil || len(m) == 0 {
 		return &errval{s: "could not unmarshal Light JSON", e: err}
 	}
-	var d decoder
 	b.lights, b.controls = make(map[string]*Light, len(m)), make(map[string]*Control, len(m))
 	for k, v := range m {
+		var d decoder
 		if err = d.unmarshal(k, b, v); err != nil {
 			return &errval{s: `could not unmarshal Light "` + k + `" JSON`, e: err}
 		}
