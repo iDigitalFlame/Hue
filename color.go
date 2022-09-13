@@ -170,17 +170,17 @@ func rgbFromXy(c gamut, l, x, y float32) (uint8, uint8, uint8) {
 func xyFromRGB(c gamut, red, green, blue uint8) (float32, float32) {
 	r, g, b := float64(red)/255.0, float64(green)/255.0, float64(blue)/255.0
 	if r > 0.04045 {
-		r = math.Pow(((r + 0.055) / (1.0 + 0.055)), 2.4)
+		r = math.Pow((r+0.055)/(1.0+0.055), 2.4)
 	} else {
 		r = r / 12.92
 	}
 	if g > 0.04045 {
-		g = math.Pow(((g + 0.055) / (1.0 + 0.055)), 2.4)
+		g = math.Pow((g+0.055)/(1.0+0.055), 2.4)
 	} else {
 		g = g / 12.92
 	}
 	if b > 0.04045 {
-		b = math.Pow(((b + 0.055) / (1.0 + 0.055)), 2.4)
+		b = math.Pow((b+0.055)/(1.0+0.055), 2.4)
 	} else {
 		b = b / 12.92
 	}

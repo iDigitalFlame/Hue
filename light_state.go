@@ -84,7 +84,7 @@ func (s *LightState) SetXY(x float32, y float32) {
 }
 
 // SetTransition will set the light state Transition time. This will take effect
-// immediately and will be constant until changed with anther call to this
+// immediately and will be constant until changed with another call to this
 // function.
 //
 // Setting zero (0) as the argument will make all state changes instantaneous.

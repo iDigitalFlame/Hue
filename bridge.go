@@ -525,7 +525,7 @@ func ConnectContext(x context.Context, address, key string) (*Bridge, error) {
 			Timeout: timeoutDefault,
 			Transport: &http.Transport{
 				Proxy:                 http.ProxyFromEnvironment,
-				DialContext:           (&net.Dialer{Timeout: timeoutDefault, KeepAlive: timeoutDefault, DualStack: true}).DialContext,
+				DialContext:           (&net.Dialer{Timeout: timeoutDefault, KeepAlive: timeoutDefault}).DialContext,
 				IdleConnTimeout:       timeoutDefault,
 				TLSHandshakeTimeout:   timeoutDefault,
 				ExpectContinueTimeout: timeoutDefault,

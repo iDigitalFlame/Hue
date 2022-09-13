@@ -105,7 +105,7 @@ func (s Sensor) Name() string {
 	return s.name
 }
 
-// HasLed returns true if the Sensor has an onboard Led light.
+// HasLed returns true if the Sensor has an onboard LED light.
 func (s *Sensor) HasLed() bool {
 	return s.config.Led != nil
 }
@@ -204,18 +204,18 @@ func (s *Sensor) SetName(n string) error {
 	return s.UpdateContext(s.bridge.ctx)
 }
 
-// Bool will attempt to retrive a boolean value from the returned Sensor data.
+// Bool will attempt to retrieve a boolean value from the returned Sensor data.
 //
 // This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
-// if the specified name does not corelate with a boolean value type.
+// if the specified name does not correlate with a boolean value type.
 func (s *Sensor) Bool(n string) (bool, error) {
 	return s.GetBool(n)
 }
 
-// GetBool will attempt to retrive a boolean value from the returned Sensor data.
+// GetBool will attempt to retrieve a boolean value from the returned Sensor data.
 //
 // This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
-// if the specified name does not corelate with a boolean value type.
+// if the specified name does not correlate with a boolean value type.
 func (s *Sensor) GetBool(n string) (bool, error) {
 	v, ok := s.Values[strings.ToLower(n)]
 	if !ok {
@@ -228,15 +228,15 @@ func (s *Sensor) GetBool(n string) (bool, error) {
 	return false, ErrNotType
 }
 
-// String will attempt to retrive a string value from the returned Sensor data.
+// String will attempt to retrieve a string value from the returned Sensor data.
 //
 // This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
-// if the specified name does not corelate with a string value type.
+// if the specified name does not correlate with a string value type.
 func (s *Sensor) String(n string) (string, error) {
 	return s.GetString(n)
 }
 
-// Get will attempt to retrive a value from the returned Sensor data.
+// Get will attempt to retrieve a value from the returned Sensor data.
 //
 // This function returns the data and a boolean which indicates if the value name
 // is returned by this Sensor.
@@ -245,7 +245,7 @@ func (s *Sensor) Get(n string) (interface{}, bool) {
 	return v, ok
 }
 
-// Number will attempt to retrive a number value from the returned Sensor data.
+// Number will attempt to retrieve a number value from the returned Sensor data.
 //
 // This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
 // if the specified name does not corelate with a number value type.
@@ -269,10 +269,10 @@ func (t *sensorTime) UnmarshalJSON(d []byte) error {
 	return nil
 }
 
-// GetString will attempt to retrive a string value from the returned Sensor data.
+// GetString will attempt to retrieve a string value from the returned Sensor data.
 //
 // This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
-// if the specified name does not corelate with a string value type.
+// if the specified name does not correlate with a string value type.
 func (s *Sensor) GetString(n string) (string, error) {
 	v, ok := s.Values[strings.ToLower(n)]
 	if !ok {
@@ -285,10 +285,10 @@ func (s *Sensor) GetString(n string) (string, error) {
 	return "", ErrNotType
 }
 
-// GetNumber will attempt to retrive a number value from the returned Sensor data.
+// GetNumber will attempt to retrieve a number value from the returned Sensor data.
 //
 // This will return 'ErrNotFound' if the value name is not found or 'ErrNotType'
-// if the specified name does not corelate with a number value type.
+// if the specified name does not correlate with a number value type.
 func (s *Sensor) GetNumber(n string) (float64, error) {
 	v, ok := s.Values[strings.ToLower(n)]
 	if !ok {

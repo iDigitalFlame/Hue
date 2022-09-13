@@ -24,7 +24,7 @@ const (
 	// AlertSelect is a light alert effect which the light is performing one
 	// breathe cycle.
 	AlertSelect = Alert(1)
-	// AlertBreathe is a light alert effect which the the light is performing
+	// AlertBreathe is a light alert effect which the light is performing
 	// breathe cycles for 15 seconds or until an 'AlertNone' command is received.
 	//
 	// Note that this contains the last alert sent to the light and not its current

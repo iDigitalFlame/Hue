@@ -164,7 +164,7 @@ func (l *Light) SetSaturation(s uint8) error {
 // SetTransition will set the light state Transition time.
 //
 // This will take effect immediately and will be constant until changed with
-// anther call to this function.
+// another call to this function.
 //
 // Setting zero (0) as the argument will make all state changes instantaneous.
 //
