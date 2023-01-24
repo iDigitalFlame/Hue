@@ -165,20 +165,6 @@ func main() {
 					strconv.FormatUint(uint64(len(v.Lights)), 10) + "\n",
 			)
 		}
-		c, err := x.Controls()
-		if err != nil {
-			os.Stderr.WriteString(`Could not get the Controls list from "` + addr + `": ` + err.Error() + "!\n")
-			os.Exit(1)
-		}
-		for k, v := range c {
-			if os.Stdout.WriteString("[" + k + "] " + v.Name() + ": " + v.Model + " "); v.IsOn() {
-				os.Stdout.WriteString("On\n")
-				continue
-			}
-			os.Stdout.WriteString("Off\n")
-		}
-
-		os.Stdout.WriteString("\nLights List\n================\n")
 		l, err := x.Lights()
 		if err != nil {
 			os.Stderr.WriteString(`Could not get the Lights list from "` + addr + `": ` + err.Error() + "!\n")
