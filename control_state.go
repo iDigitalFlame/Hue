@@ -160,7 +160,6 @@ func (s controlState) marshal(m uint16) ([]byte, error) {
 	if m&maskTemperature != 0 {
 		i["ct"] = s.Temperature
 	}
-
 	d, err := json.Marshal(i)
 	if err != nil {
 		return nil, err
