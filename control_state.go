@@ -1,17 +1,16 @@
 // Copyright (C) 2021 - 2023 iDigitalFlame
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// any later version.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 package hue
@@ -56,6 +55,7 @@ type Effect bool
 // Alert represents the type of Alert effect that can be applied to a Hue Control
 // object.
 type Alert uint8
+
 type controlState struct {
 	XY          point  `json:"xy,omitempty"`
 	Hue         uint16 `json:"hue,omitempty"`
@@ -133,7 +133,7 @@ func (e *Effect) UnmarshalJSON(d []byte) error {
 }
 func (s controlState) marshal(m uint16) ([]byte, error) {
 	i := make(map[string]interface{})
-	if i["transitiontime"] = s.Transition; m&maskOn != 0 {
+	if m&maskOn != 0 {
 		i["on"] = s.On
 	}
 	if m&maskXY != 0 {
@@ -144,6 +144,9 @@ func (s controlState) marshal(m uint16) ([]byte, error) {
 	}
 	if m&maskAlert != 0 {
 		i["alert"] = s.Alert.String()
+	}
+	if s.Transition > 0 {
+		i["transitiontime"] = s.Transition
 	}
 	if m&maskEffect != 0 {
 		i["effect"] = s.Effect.String()
@@ -157,6 +160,7 @@ func (s controlState) marshal(m uint16) ([]byte, error) {
 	if m&maskTemperature != 0 {
 		i["ct"] = s.Temperature
 	}
+
 	d, err := json.Marshal(i)
 	if err != nil {
 		return nil, err

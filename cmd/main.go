@@ -1,17 +1,16 @@
 // Copyright (C) 2021 - 2023 iDigitalFlame
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// any later version.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 package main
@@ -26,7 +25,7 @@ import (
 	"github.com/iDigitalFlame/hue"
 )
 
-const usage = `huectl - Hue Bridge Controller v1
+const usage = `huectl - Hue Bridge Controller v2
 Copyright (C) 2021 - 2023 iDigitalFlame
 
 Usage:
@@ -56,26 +55,29 @@ Usage:
     -trans  X(s|m|h)
         Use the following duration string as the transition time. This is zero
         (instant) by default.
+    -V
+        Print the build version.
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-any later version.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+http://www.apache.org/licenses/LICENSE-2.0
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 `
+
+var version = "unknown"
 
 func main() {
 	var (
 		trans                       time.Duration
-		on, off, list               bool
 		bright, sat, temp           int
+		on, off, list, ver          bool
 		target, hex, rgb, addr, key string
 		f                           = flag.NewFlagSet("huectl", flag.ExitOnError)
 	)
@@ -85,6 +87,7 @@ func main() {
 	f.BoolVar(&on, "on", false, "")
 	f.BoolVar(&off, "off", false, "")
 	f.BoolVar(&list, "list", false, "")
+	f.BoolVar(&ver, "V", false, "")
 	f.StringVar(&hex, "hex", "", "")
 	f.StringVar(&rgb, "rgb", "", "")
 	f.IntVar(&sat, "sat", -1, "")
@@ -97,6 +100,11 @@ func main() {
 	}
 	if err := f.Parse(os.Args[1:]); err != nil {
 		f.Usage()
+	}
+
+	if ver {
+		os.Stdout.WriteString("Huectl: v2_" + version + "\n")
+		os.Exit(0)
 	}
 
 	if len(key) == 0 {
@@ -157,7 +165,20 @@ func main() {
 					strconv.FormatUint(uint64(len(v.Lights)), 10) + "\n",
 			)
 		}
+		c, err := x.Controls()
+		if err != nil {
+			os.Stderr.WriteString(`Could not get the Controls list from "` + addr + `": ` + err.Error() + "!\n")
+			os.Exit(1)
+		}
+		for k, v := range c {
+			if os.Stdout.WriteString("[" + k + "] " + v.Name() + ": " + v.Model + " "); v.IsOn() {
+				os.Stdout.WriteString("On\n")
+				continue
+			}
+			os.Stdout.WriteString("Off\n")
+		}
 
+		os.Stdout.WriteString("\nLights List\n================\n")
 		l, err := x.Lights()
 		if err != nil {
 			os.Stderr.WriteString(`Could not get the Lights list from "` + addr + `": ` + err.Error() + "!\n")
@@ -179,7 +200,6 @@ func main() {
 			}
 			os.Stdout.WriteString("Off\n")
 		}
-
 		os.Exit(0)
 	}
 
@@ -241,7 +261,6 @@ func main() {
 			break
 		}
 	}
-
 	if err != nil {
 		os.Stderr.WriteString("Error changing requested lights: " + err.Error() + "!\n")
 		os.Exit(1)
