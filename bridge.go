@@ -262,7 +262,8 @@ func (b *Bridge) SensorByName(n string) *Sensor {
 }
 func (r *response) UnmarshalJSON(d []byte) error {
 	if d[0] == '{' {
-		*r = d
+		*r = make(response, len(d))
+		copy(*r, d)
 		return nil
 	}
 	var (
